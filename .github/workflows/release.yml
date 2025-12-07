@@ -158,18 +158,18 @@ jobs:
 
       - name: Create Universal Binary
         run: |
-          mkdir $PACKAGENAME
-          cp README.md LICENSE $PACKAGENAME
+          mkdir ${{ env.PACKAGENAME }}
+          cp README.md LICENSE ${{ env.PACKAGENAME }}
           lipo -create \
             artifacts/macos-x86/${{ needs.setup.outputs.APPNAME }} \
             artifacts/macos-arm/${{ needs.setup.outputs.APPNAME }} \
-            -o $PACKAGENAME/${{ needs.setup.outputs.APPNAME }}
-          strip $PACKAGENAME/${{ needs.setup.outputs.APPNAME }}
-          zip -9r $PACKAGENAME.zip $PACKAGENAME
+            -o ${{ env.PACKAGENAME }}/${{ needs.setup.outputs.APPNAME }}
+          strip ${{ env.PACKAGENAME }}/${{ needs.setup.outputs.APPNAME }}
+          zip -9r ${{ env.PACKAGENAME }}.zip ${{ env.PACKAGENAME }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: $PACKAGENAME
+          name: ${{ env.PACKAGENAME }}
           path: ${{ env.PACKAGENAME }}.zip
 
   # ---------------- Windows ----------------

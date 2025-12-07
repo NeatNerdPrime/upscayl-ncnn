@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: get-appname
         id: get_appname
-        run: echo ::set-output name=APPNAME::${APPLICATION_NAME}
+        run: echo "APPNAME=${APPLICATION_NAME}" >> "$GITHUB_OUTPUT"
       - name: get-version
         id: get_version
         run: echo "VERSION=$(date +'%Y%m%d-%H%M%S')" >> "$GITHUB_OUTPUT"
@@ -30,15 +30,15 @@ jobs:
     env:
       PACKAGENAME: ${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-linux
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: "recursive"
       - name: cache-vulkansdk
         id: cache-vulkansdk
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
-          path: "{{ env.VK_VERSION }}"
-          key: "vulkansdk-linux-x86_64-{{ env.VK_VERSION }}"
+          path: "${{ env.VK_VERSION }}"
+          key: vulkansdk-linux-x86_64-${{ env.VK_VERSION }}
       - name: vulkansdk
         if: steps.cache-vulkansdk.outputs.cache-hit != 'true'
         run: |
@@ -65,7 +65,7 @@ jobs:
           strip -g ${{ env.PACKAGENAME }}/${{ needs.setup.outputs.APPNAME }}
           zip -9 -r ${{ env.PACKAGENAME }}.zip ${{ env.PACKAGENAME }}
       - name: upload
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PACKAGENAME }}
           path: ${{ env.PACKAGENAME }}.zip
@@ -76,7 +76,7 @@ jobs:
     env:
       PACKAGENAME: ${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-macos
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: "recursive"
       - name: install-openmp
@@ -92,10 +92,10 @@ jobs:
           sudo cp /usr/local/Cellar/libomp/$(brew list --versions libomp | grep -oE '[0-9]+\.[0-9]+\.[0-9]')/lib/libomp.a $DEVELOPER_DIR/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib
       - name: cache-vulkansdk
         id: cache-vulkansdk
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: "vulkan-mac-sdk"
-          key: vulkan-mac-sdk
+          key: vulkan-mac-sdk-${{ env.VK_VERSION }}
       - name: vulkansdk
         if: steps.cache-vulkansdk.outputs.cache-hit != 'true'
         run: |
@@ -144,7 +144,7 @@ jobs:
           strip ${{ env.PACKAGENAME }}/${{ needs.setup.outputs.APPNAME }}
           zip -9 -r ${{ env.PACKAGENAME }}.zip ${{ env.PACKAGENAME }}
       - name: upload
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PACKAGENAME }}
           path: ${{ env.PACKAGENAME }}.zip
@@ -155,15 +155,15 @@ jobs:
     env:
       PACKAGENAME: ${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-windows
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: "recursive"
       - name: cache-vulkansdk
         id: cache-vulkansdk
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: "VulkanSDK"
-          key: VulkanSDK-{{ VK_VERSION }}-Installer
+          key: VulkanSDK-${{ env.VK_VERSION }}-Installer
       - name: vulkansdk
         if: steps.cache-vulkansdk.outputs.cache-hit != 'true'
         run: |
@@ -186,7 +186,7 @@ jobs:
           Copy-Item -Verbose -Path "C:\windows\system32\vcomp140d.dll" -Destination "${{ env.PACKAGENAME }}"
           7z a -r ${{ env.PACKAGENAME }}.zip ${{ env.PACKAGENAME }}
       - name: upload
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PACKAGENAME }}
           path: ${{ env.PACKAGENAME }}.zip
@@ -197,7 +197,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: download
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
 
@@ -207,44 +207,15 @@ jobs:
 
       - name: create-release
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ needs.setup.outputs.VERSION }}
-          release_name: upscayl-bin-${{ needs.setup.outputs.VERSION }}
+          name: upscayl-bin-${{ needs.setup.outputs.VERSION }}
           draft: false
           prerelease: false
-
-      - name: upload-ubuntu
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PACKAGENAME: ${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-linux
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/${{ env.PACKAGENAME }}/${{ env.PACKAGENAME }}.zip
-          asset_name: ${{ env.PACKAGENAME }}.zip
-          asset_content_type: application/zip
-
-      - name: upload-macos
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PACKAGENAME: ${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-macos
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/${{ env.PACKAGENAME }}/${{ env.PACKAGENAME }}.zip
-          asset_name: ${{ env.PACKAGENAME }}.zip
-          asset_content_type: application/zip
-
-      - name: upload-windows
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PACKAGENAME: ${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-windows
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/${{ env.PACKAGENAME }}/${{ env.PACKAGENAME }}.zip
-          asset_name: ${{ env.PACKAGENAME }}.zip
-          asset_content_type: application/zip
+          files: |
+            artifacts/${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-linux/${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-linux.zip
+            artifacts/${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-macos/${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-macos.zip
+            artifacts/${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-windows/${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-windows.zip

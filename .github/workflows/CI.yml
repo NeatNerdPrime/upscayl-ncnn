@@ -9,15 +9,15 @@ jobs:
   windows:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
     - name: cache-vulkansdk
       id: cache-vulkansdk
-      uses: actions/cache@v1
+      uses: actions/cache@v4
       with:
         path: "VulkanSDK"
-        key: "VulkanSDK-{{ VK_VERSION }}-Installer"
+        key: VulkanSDK-${{ env.VK_VERSION }}-Installer
     - name: vulkansdk
       if: steps.cache-vulkansdk.outputs.cache-hit != 'true'
       run: |
@@ -33,15 +33,15 @@ jobs:
   ubuntu:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
     - name: cache-vulkansdk
       id: cache-vulkansdk
-      uses: actions/cache@v1
+      uses: actions/cache@v4
       with:
-        path: "{{ VK_VERSION }}"
-        key: "vulkansdk-linux-x86_64-{{ VK_VERSION }}"
+        path: "${{ env.VK_VERSION }}"
+        key: vulkansdk-linux-x86_64-${{ env.VK_VERSION }}
     - name: vulkansdk
       if: steps.cache-vulkansdk.outputs.cache-hit != 'true'
       run: |
@@ -61,15 +61,15 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
     - name: cache-vulkansdk
       id: cache-vulkansdk
-      uses: actions/cache@v1
+      uses: actions/cache@v4
       with:
         path: "vulkan-mac-sdk"
-        key: "vulkansdk-macos-{{ VK_VERSION }}"
+        key: vulkansdk-macos-${{ env.VK_VERSION }}
     - name: vulkansdk
       if: steps.cache-vulkansdk.outputs.cache-hit != 'true'
       run: |

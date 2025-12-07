@@ -50,15 +50,15 @@ jobs:
 
       - name: Package
         run: |
-          mkdir $PACKAGENAME
-          cp README.md LICENSE build/${{ needs.setup.outputs.APPNAME }} $PACKAGENAME
-          strip $PACKAGENAME/${{ needs.setup.outputs.APPNAME }}
-          zip -9r $PACKAGENAME.zip $PACKAGENAME
+          mkdir ${{ env.PACKAGENAME }}
+          cp README.md LICENSE build/${{ needs.setup.outputs.APPNAME }} ${{ env.PACKAGENAME }}
+          strip ${{ env.PACKAGENAME }}/${{ needs.setup.outputs.APPNAME }}
+          zip -9r ${{ env.PACKAGENAME }}.zip ${{ env.PACKAGENAME }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: $PACKAGENAME
-          path: $PACKAGENAME.zip
+          name: ${{ env.PACKAGENAME }}
+          path: ${{ env.PACKAGENAME }}.zip
 
   # ---------------- macOS x86_64 ----------------
   macos-x86:
@@ -170,7 +170,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: $PACKAGENAME
-          path: $PACKAGENAME.zip
+          path: ${{ env.PACKAGENAME }}.zip
 
   # ---------------- Windows ----------------
   windows:
@@ -197,14 +197,18 @@ jobs:
 
       - name: Package
         run: |
-          mkdir $env:PACKAGENAME
-          Copy-Item README.md,LICENSE build/Release/${{ needs.setup.outputs.APPNAME }}.exe $env:PACKAGENAME
-          7z a $env:PACKAGENAME.zip $env:PACKAGENAME
+          mkdir ${{ env.PACKAGENAME }}
+          Copy-Item `
+            README.md `
+            LICENSE `
+            build/Release/${{ needs.setup.outputs.APPNAME }}.exe `
+            -Destination ${{ env.PACKAGENAME }}
+          7z a ${{ env.PACKAGENAME }}.zip ${{ env.PACKAGENAME }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: $env:PACKAGENAME
-          path: $env:PACKAGENAME.zip
+          name: ${{ env.PACKAGENAME }}
+          path: ${{ env.PACKAGENAME }}.zip
 
   # ---------------- GitHub Release ----------------
   release:

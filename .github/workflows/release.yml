@@ -197,13 +197,9 @@ jobs:
 
       - name: Package
         run: |
-          mkdir ${{ env.PACKAGENAME }}
-          Copy-Item `
-            README.md `
-            LICENSE `
-            build/Release/${{ needs.setup.outputs.APPNAME }}.exe `
-            -Destination ${{ env.PACKAGENAME }}
-          7z a ${{ env.PACKAGENAME }}.zip ${{ env.PACKAGENAME }}
+          mkdir "${{ env.PACKAGENAME }}"
+          Copy-Item README.md, LICENSE, "build/Release/${{ needs.setup.outputs.APPNAME }}.exe" -Destination "${{ env.PACKAGENAME }}"
+          7z a "${{ env.PACKAGENAME }}.zip" "${{ env.PACKAGENAME }}"
 
       - uses: actions/upload-artifact@v4
         with:
